@@ -1,0 +1,33 @@
+{
+  "name": "ipade-backend",
+  "version": "1.0.0",
+  "description": "API for ipade scheduling app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "server": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://tundeogunjimi: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@github.com/tundeogunjimi/ipade-backend.git"
+  },
+  "author": "Tunde Ogunjimi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tundeogunjimi/ipade-backend/issues"
+  },
+  "homepage": "https://github.com/tundeogunjimi/ipade-backend#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "colors": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "^7.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
