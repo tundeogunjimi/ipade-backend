@@ -18,6 +18,8 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api/users', require('./routes/userRoutes'))
+app.use('/api/booking', require('./routes/bookingRoutes'))
+app.use('/api', require('./routes/messageRoute'))
 
 app.use(errorHandler)
 

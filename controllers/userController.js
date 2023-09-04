@@ -38,12 +38,15 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     if (user) {
-        res.status(201).json({
+        const createdUser = {
             _id: user._id,
             name: user.name,
             email: user.email,
             token: generateToken(user._id)
-        })
+        }
+        // send email with attached token to user
+        console.log(`user token >>>`, createdUser.token)
+        res.status(201).json(createdUser)
     } else {
         res.status(400)
         throw new Error('Invalid user data')
@@ -78,6 +81,24 @@ const loginUser = asyncHandler(async (req, res) => {
 
 /**
  *
+ * @desc Confirm registered user
+ * @route /api/users/confirm
+ * @access Public
+ */
+const confirmUser = asyncHandler(async (req, res) => {
+    const token = req.query.token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const user = await User.findById(decoded.id).select('-password')
+    console.log(`req params >>> `, req.query, decoded, user)
+
+    user.isActive = true
+    const confirmedUser = await User.findByIdAndUpdate(user.id, user, {new: true})
+    
+    res.status(200).json(confirmedUser)
+})
+
+/**
+ *
  * @desc Get current user
  * @route /api/users/me
  * @access Private
@@ -101,5 +122,6 @@ const generateToken = (id) => {
 module.exports = {
     registerUser,
     loginUser,
-    getMe
+    getMe,
+    confirmUser,
 }
