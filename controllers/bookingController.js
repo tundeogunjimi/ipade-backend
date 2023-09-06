@@ -1,6 +1,4 @@
 const asyncHandler = require('express-async-handler')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
 
 const Booking = require('../models/bookingModel')
 
