@@ -52,7 +52,7 @@ const paymentSchema = mongoose.Schema({
         },
         logo: {
             type: String,
-            required: [true, 'logo missing'],
+            required: false,
         },
     },
     payment_link: {
@@ -81,6 +81,10 @@ const paymentSchema = mongoose.Schema({
             default: ''
         }
     },
+    booking_id: {
+        type: String,
+        required: true
+    }
 },
 {
     timestamps: true,

@@ -12,17 +12,17 @@ const bookingSchema = mongoose.Schema({
     },
     gender: {
         type: String,
-        required: [true, 'Please specify your gender']
+        required: false
     },
     mobile: {
         type: String,
         required: false
     },
-    appointmentDate: {
+    date: {
         type: Date,
         required: [true, 'Please select a date']
     },
-    appointmentTime: {
+    time: {
         type: String,
         required: [true, 'Please select time']
     },

@@ -29,12 +29,14 @@ const registerUser = asyncHandler(async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
+    const confirmationToken = await bcrypt.hash(email, salt)
 
     // Create user
     const user = await User.create({
         name,
         email,
         password: hashedPassword,
+        confirmationToken
     })
 
     if (user) {
@@ -42,9 +44,10 @@ const registerUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
-            token: generateToken(user._id)
+            token: generateToken(user._id),
+            confirmationToken: user.confirmationToken
         }
-        // send email with attached token to user
+        // send email with attached confirmation token to user
         console.log(`user token >>>`, createdUser.token)
         res.status(201).json(createdUser)
     } else {
@@ -86,15 +89,28 @@ const loginUser = asyncHandler(async (req, res) => {
  * @access Public
  */
 const confirmUser = asyncHandler(async (req, res) => {
-    const token = req.query.token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const user = await User.findById(decoded.id).select('-password')
-    console.log(`req params >>> `, req.query, decoded, user)
+    const user = await User.findById(req.query.id).select('-password')
 
-    user.isActive = true
-    const confirmedUser = await User.findByIdAndUpdate(user.id, user, {new: true})
+    if(!user) {
+        return res.status(500).json({ status: false, message: 'user confirmation failed'}) 
+    }
+
+    if (req.query.confirmation_token === user.confirmationToken) {
+        user.isActive = true
+        const confirmedUser = await User.findByIdAndUpdate(user.id, user, {new: true})
+        return res.status(200).json({ status: true, message: 'user confirmed'})
+    }
+    return res.status(500).json({ status: false, message: 'user confirmation failed'})
+
+    // const token = req.query.token
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    // const user = await User.findById(decoded.id).select('-password')
+    // console.log(`req params >>> `, req.query, decoded, user)
+
+    // user.isActive = true
+    // const confirmedUser = await User.findByIdAndUpdate(user.id, user, {new: true})
     
-    res.status(200).json(confirmedUser)
+    // res.status(200).json(confirmedUser)
 })
 
 /**
@@ -111,6 +127,7 @@ const getMe = asyncHandler(async (req, res) => {
     }
     res.status(200).json(user)
 })
+
 
 // Generate token
 const generateToken = (id) => {

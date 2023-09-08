@@ -14,6 +14,9 @@ const userSchema = mongoose.Schema({
     type: String,
     required: [true, 'Please add a password']
    },
+   confirmationToken: {
+    type: String
+   },
    isAdmin: {
     type: Boolean,
     required: true,

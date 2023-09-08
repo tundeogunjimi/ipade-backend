@@ -10,6 +10,7 @@ const makePayment = asyncHandler(async(req, res) => {
     try {
         const paymentDetails = req.body
         paymentDetails.tx_ref = generateTxRef(12)
+        paymentDetails.booking_id = req.query.booking_id
 
         const transaction = await Transaction.findOne({tx_ref: req.body.tx_ref}).exec()
         if (transaction) {
@@ -30,6 +31,7 @@ const makePayment = asyncHandler(async(req, res) => {
             data: response.data
         }
         const createdTransaction = await Transaction.create(paymentDetails)
+        console.log(`payment details >>> `, createdTransaction)
         return res.status(200).json(createdTransaction)
     }
         
@@ -63,12 +65,24 @@ const verifyPayment = asyncHandler(async(req, res) => {
                 transactionDetails._id,
                 { payment_status: transactionDetails.payment_status }
             )
-            res.status(200).json(response)
+            response.id = transactionDetails._id
+            res.status(200).json(updatedTransaction)
         } else {
             // Inform the customer their payment was unsuccessful
             res.status(500).json({ message: 'payment failed'})
         }
     }
+})
+
+const getTransactionByBookingId = asyncHandler(async(req, res) => {
+    const booking_id = req.query.booking_id;
+    const transaction = await Transaction.findOne({ booking_id })
+
+    if (!transaction) {
+        return res.status(401).send(`transaction not found`)
+    }
+
+    return res.status(200).json(transaction)
 })
 
 const generateTxRef = (length) => {
@@ -85,5 +99,6 @@ const generateTxRef = (length) => {
 
 module.exports = {
     makePayment,
-    verifyPayment
+    verifyPayment,
+    getTransactionByBookingId
 }

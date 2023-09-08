@@ -33,22 +33,25 @@ const getBooking = asyncHandler(async(req, res) => {
 
 const createBooking = asyncHandler(async(req, res) => {
     const { 
-        name, email, gender, mobile, appointmentDate, appointmentTime,
+        name, email, gender, mobile, date, time,
         status, purpose, message, tenantId, completed, meetingType,
     } = req.body
 
-    if (!name || !email) {
-        res.status(400)
-        throw new Error('Please include all required fields')
-    }
+    // if (!name || !email) {
+    //     res.status(400)
+    //     throw new Error('Please include all required fields')
+    // }
+    
+    const errors = validateFormInput(req.body)
+    if (errors.status === 'invalid')  return res.status(400).json(errors)
 
     const booking = await Booking.create({
         name,
         email,
         gender, 
         mobile, 
-        appointmentDate, 
-        appointmentTime,
+        date, 
+        time,
         status, 
         purpose, 
         message, 
@@ -64,8 +67,8 @@ const createBooking = asyncHandler(async(req, res) => {
             email: booking.email,
             gender: booking.gender, 
             mobile: booking.mobile, 
-            appointmentDate: booking.appointmentDate, 
-            appointmentTime: booking.appointmentTime,
+            date: booking.date, 
+            time: booking.time,
             status: booking.status, 
             purpose: booking.purpose, 
             message: booking.message, 
@@ -87,6 +90,9 @@ const updateBooking = asyncHandler(async(req, res) => {
         throw new Error('Booking not found')
     }
 
+    const errors = validateFormInput(req.body)
+    if (errors.status === 'invalid')  return res.status(400).json(errors)
+
     const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, req.body, {new: true}).exec()
 
     res.status(200).json(updatedBooking)
@@ -104,6 +110,29 @@ const deleteBooking = asyncHandler(async(req, res) => {
 
     res.status(200).json({success: true})
 })
+
+validateFormInput = (booking) => {
+    const formErrors = {}
+
+    if (booking.name.length < 6) formErrors.name = `Name must be at least 6 characters long`
+
+    const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+    if (!emailRegex.test(booking.email)) formErrors.email = 'Enter a valid email address'
+
+    if(!booking.mobile) formErrors.mobile = 'Enter a valid phone number'
+
+    if(!booking.date) formErrors.date = 'Select a date'
+    if(!booking.time) formErrors.time = 'Select a time'
+
+    if (
+        formErrors.name || formErrors.email
+        || formErrors.date || formErrors.time
+        ) formErrors.status = 'invalid'
+
+    
+    
+    return formErrors
+}
 
 
 module.exports = {
