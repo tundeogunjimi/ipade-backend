@@ -13,14 +13,15 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-app.get('/', (req, res) => {
-    res.send('Hello')
-})
+// app.get('/', (req, res) => {
+//     res.send('Hello')
+// })
 
 app.use('/api/users', require('./routes/userRoutes'))
 app.use('/api/booking', require('./routes/bookingRoutes'))
 app.use('/api/message', require('./routes/messageRoute'))
 app.use('/api/payment', require('./routes/paymentRoute'))
+app.use('/api/meeting', require('./routes/meetingRoutes'))
 
 app.use(errorHandler)
 
