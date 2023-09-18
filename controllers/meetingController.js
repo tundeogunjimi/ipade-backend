@@ -1,7 +1,6 @@
 const asyncHandler = require('express-async-handler')
 
 const Meeting = require('../models/meetingModel')
-const { updateBooking } = require('./bookingController')
 
 const createMeeting = asyncHandler(async(req, res) => {
 
@@ -18,6 +17,7 @@ const createMeeting = asyncHandler(async(req, res) => {
             desc: meeting.desc,
             link: meeting.link,
             location: meeting.location,
+            address: meeting.address,
             price: meeting.price,
             tenantId: meeting.tenantId,
             isFree: meeting.isFree
@@ -42,6 +42,21 @@ const getAllMeetings = asyncHandler(async(req, res) => {
     res.status(200).json(meetings)
 })
 
+const getMeeting = asyncHandler(async(req, res) => {
+
+    if(!req.query.meetingId || !req.query.tenantId) {
+        res.status(401)
+        throw new Error('You are not authorized to view meetings')
+    }
+
+    const meeting = await Meeting.findOne({
+        tenantId: req.query.tenantId, 
+        _id: req.query.meetingId
+    })
+
+    res.status(200).json(meeting)
+})
+
 
 const updateMeeting = asyncHandler(async(req, res) => {
     if (!req.params.id || req.params.tenantId) {
@@ -64,7 +79,7 @@ const updateMeeting = asyncHandler(async(req, res) => {
 
 const deleteMeeting = asyncHandler(async(req, res) => {
 
-    if (!req.params.id || !req.query.tenantId) {
+    if (!req.params.id) {
         res.status(401)
         throw new Error('Not authorized')
     }
@@ -100,5 +115,6 @@ module.exports = {
     createMeeting,
     getAllMeetings,
     updateMeeting,
-    deleteMeeting
+    deleteMeeting,
+    getMeeting
 }

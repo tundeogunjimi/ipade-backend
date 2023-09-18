@@ -15,6 +15,9 @@ const meetingSchema = mongoose.Schema({
     location: {
         type: String,
     },
+    address: {
+        type: String,
+    },
     duration: {
         type: Number,
     },

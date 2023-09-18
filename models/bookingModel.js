@@ -8,16 +8,15 @@ const bookingSchema = mongoose.Schema({
     email: {
     type: String,
     required: [true, 'Please add an email'],
-    unique: false
     },
-    gender: {
-        type: String,
-        required: false
-    },
-    mobile: {
-        type: String,
-        required: false
-    },
+    // gender: {
+    //     type: String,
+    //     required: false
+    // },
+    // mobile: {
+    //     type: String,
+    //     required: false
+    // },
     date: {
         type: Date,
         required: [true, 'Please select a date']
@@ -31,10 +30,9 @@ const bookingSchema = mongoose.Schema({
         required: false,
         default: 'pending'
     },
-    purpose: {
-        type: String,
-        required: false 
-    },
+    // purpose: {
+    //     type: String,
+    // },
     message: {
         type: String,
         required: false

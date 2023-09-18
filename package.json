@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/tundeogunjimi/ipade-backend#readme",
   "dependencies": {
+    "@getbrevo/brevo": "^1.0.1",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
     "dotenv": "^16.3.1",

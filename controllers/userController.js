@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/userModel')
+const { sendInBlue } = require('./messageController')
 
 /**
  *
@@ -49,7 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
             confirmationToken: user.confirmationToken
         }
         // send email with attached confirmation token to user
-        console.log(`user token >>>`, createdUser.token)
+        sendInBlue(createdUser)
         res.status(201).json(createdUser)
     } else {
         res.status(400)
@@ -67,6 +68,9 @@ const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
     const user = await User.findOne({email})
+    if (!user || user.isActive === false) {
+        res.status(401).json({ message: 'Account not found or inactive'})
+    }
 
     // Check user and passwords match
     if(user && (await bcrypt.compare(password, user.password))) {
@@ -74,13 +78,13 @@ const loginUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            bio: user.bio,
             token: generateToken(user._id)
         })
     } else {
         res.status(401)
         throw new Error('Invalid credentials')
     }
-    res.send('Login Route')
 })
 
 /**
@@ -93,10 +97,10 @@ const confirmUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.query.id).select('-password')
 
     if(!user) {
-        return res.status(500).json({ status: false, message: 'user confirmation failed'}) 
+        return res.status(500).json({ status: false, message: 'user not found! Please contact support'}) 
     }
 
-    if (req.query.confirmation_token === user.confirmationToken) {
+    if (req.query.token === user.confirmationToken) {
         user.isActive = true
         const confirmedUser = await User.findByIdAndUpdate(user.id, user, {new: true})
         return res.status(200).json({ status: true, message: 'user confirmed'})
@@ -114,6 +118,70 @@ const confirmUser = asyncHandler(async (req, res) => {
     // res.status(200).json(confirmedUser)
 })
 
+const updateProfile = asyncHandler(async(req, res) => {
+    const { id, email, } = req.body
+
+    if(!email || !id) {
+        res.status(400)
+        throw new Error('User not found')
+    }
+
+    const user = await User.findOne({email, _id: id})
+
+    if (user) {
+        const updateValues = {name: req.body.name, bio: req.body.bio}
+        const updatedUser = await User.findByIdAndUpdate(user.id, updateValues)
+        const returnValue = {
+            id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            bio: updatedUser.bio,
+        }
+        return res.status(200).json(returnValue)
+    }
+
+    return res.status(500).json({message: 'Profile not updated'})
+})
+
+const uploadProfilePicture = asyncHandler(async(req, res) => {
+
+    const { id, email, } = req.body.user
+
+    if(!email || !id) {
+        res.status(400)
+        throw new Error('User not found')
+    }
+
+    const user = await User.findOne({email, _id: id})
+
+    if (user) {
+        const updateValues = {profilePicture: req.body.user.profilePicture}
+        const updatedUser = await User.findByIdAndUpdate(user.id, updateValues)
+        return res.status(200).json({message: true})
+    }
+    console.log(req.body)
+})
+
+const deleteProfile = asyncHandler(async(req, res) => {
+
+    if(!req.query.email || !req.query.id) {
+        res.status(400)
+        throw new Error('User not found')
+    }
+
+    const user = await User.findOne({
+        email: req.query.email,
+        _id: req.query.id
+    })
+
+    if (user) {
+        await User.findByIdAndDelete(user._id)
+        return res.status(200).json({success: 'Profile successfully deleted'})
+    }
+
+    return res.status(500).json({error: 'Profile not deleted'})
+})
+
 /**
  *
  * @desc Get current user
@@ -124,7 +192,8 @@ const getMe = asyncHandler(async (req, res) => {
     const user = {
         id: req.user._id,
         email: req.user.email, 
-        name: req.user.name
+        name: req.user.name,
+        bio: req.user.bio
     }
     res.status(200).json(user)
 })
@@ -142,4 +211,7 @@ module.exports = {
     loginUser,
     getMe,
     confirmUser,
+    updateProfile,
+    deleteProfile,
+    uploadProfilePicture
 }

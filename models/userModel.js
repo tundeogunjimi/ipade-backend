@@ -10,6 +10,10 @@ const userSchema = mongoose.Schema({
     required: [true, 'Please add an email'],
     unique: true
    },
+   bio: {
+    type: String,
+    default: 'About '
+   },
    password: {
     type: String,
     required: [true, 'Please add a password']
@@ -27,6 +31,10 @@ const userSchema = mongoose.Schema({
     required: true,
     default: false
    },
+   profilePicture: {
+    type: String,
+    default: 'pending'
+   }
 }, 
 {
     timestamps: true,

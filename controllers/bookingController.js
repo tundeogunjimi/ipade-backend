@@ -19,6 +19,7 @@ const getAllBooking = asyncHandler(async(req, res) => {
 
 
 const getBooking = asyncHandler(async(req, res) => {
+    console.log(req.params, req.query)
 
     if (!req.params.id || !req.query.tenantId) {
         res.status(401)
@@ -33,8 +34,8 @@ const getBooking = asyncHandler(async(req, res) => {
 
 const createBooking = asyncHandler(async(req, res) => {
     const { 
-        name, email, gender, mobile, date, time,
-        status, purpose, message, tenantId, completed, meetingType,
+        name, email, date, time,
+        status, message, tenantId, completed, meetingType,
     } = req.body
 
     // if (!name || !email) {
@@ -42,18 +43,18 @@ const createBooking = asyncHandler(async(req, res) => {
     //     throw new Error('Please include all required fields')
     // }
     
-    const errors = validateFormInput(req.body)
+    const errors = validateBody(req.body)
     if (errors.status === 'invalid')  return res.status(400).json(errors)
 
     const booking = await Booking.create({
         name,
         email,
-        gender, 
-        mobile, 
+        // gender, 
+        // mobile, 
         date, 
         time,
         status, 
-        purpose, 
+        // purpose, 
         message, 
         tenantId, 
         completed, 
@@ -65,12 +66,12 @@ const createBooking = asyncHandler(async(req, res) => {
             _id: booking._id,
             name: booking.name,
             email: booking.email,
-            gender: booking.gender, 
-            mobile: booking.mobile, 
+            // gender: booking.gender, 
+            // mobile: booking.mobile, 
             date: booking.date, 
             time: booking.time,
             status: booking.status, 
-            purpose: booking.purpose, 
+            // purpose: booking.purpose, 
             message: booking.message, 
             tenantId: booking.tenantId, 
             completed: booking.completed, 
@@ -90,7 +91,7 @@ const updateBooking = asyncHandler(async(req, res) => {
         throw new Error('Booking not found')
     }
 
-    const errors = validateFormInput(req.body)
+    const errors = validateBody(req.body)
     if (errors.status === 'invalid')  return res.status(400).json(errors)
 
     const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, req.body, {new: true}).exec()
@@ -111,7 +112,8 @@ const deleteBooking = asyncHandler(async(req, res) => {
     res.status(200).json({success: true})
 })
 
-validateFormInput = (booking) => {
+// Validation 
+validateBody = (booking) => {
     const formErrors = {}
 
     if (booking.name.length < 6) formErrors.name = `Name must be at least 6 characters long`
@@ -119,7 +121,7 @@ validateFormInput = (booking) => {
     const emailRegex = new RegExp(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
     if (!emailRegex.test(booking.email)) formErrors.email = 'Enter a valid email address'
 
-    if(!booking.mobile) formErrors.mobile = 'Enter a valid phone number'
+    // if(!booking.mobile) formErrors.mobile = 'Enter a valid phone number'
 
     if(!booking.date) formErrors.date = 'Select a date'
     if(!booking.time) formErrors.time = 'Select a time'
@@ -128,8 +130,6 @@ validateFormInput = (booking) => {
         formErrors.name || formErrors.email
         || formErrors.date || formErrors.time
         ) formErrors.status = 'invalid'
-
-    
     
     return formErrors
 }
