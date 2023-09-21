@@ -5,7 +5,7 @@ const { protect } = require('../middleware/authMiddleware')
 
 router.post('/', protect, createMeeting)
 router.get('/', protect, getAllMeetings)
-router.get('/i', getMeeting)
+router.get('/:id', getMeeting)
 router.put('/:id', protect, updateMeeting)
 router.delete('/:id', protect, deleteMeeting)
 

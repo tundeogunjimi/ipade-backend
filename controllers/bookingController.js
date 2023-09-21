@@ -10,7 +10,7 @@ const getAllBooking = asyncHandler(async(req, res) => {
     }
 
     const bookings = await Booking.find({
-        email: req.query.email, 
+        // email: req.query.email, 
         tenantId: req.query.tenantId
     })
 
@@ -19,7 +19,6 @@ const getAllBooking = asyncHandler(async(req, res) => {
 
 
 const getBooking = asyncHandler(async(req, res) => {
-    console.log(req.params, req.query)
 
     if (!req.params.id || !req.query.tenantId) {
         res.status(401)

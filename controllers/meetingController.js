@@ -44,9 +44,11 @@ const getAllMeetings = asyncHandler(async(req, res) => {
 
 const getMeeting = asyncHandler(async(req, res) => {
 
-    if(!req.query.meetingId || !req.query.tenantId) {
+    console.log(`view req >>> `, req.params)
+
+    if(!req.params.id || !req.query.tenantId) {
         res.status(401)
-        throw new Error('You are not authorized to view meetings')
+        throw new Error('Error: meeting with not fetched')
     }
 
     const meeting = await Meeting.findOne({

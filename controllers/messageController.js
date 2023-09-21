@@ -1,8 +1,10 @@
 const asyncHandler = require('express-async-handler');
 const {welcomeEmail} = require('../assets/campaigns/welcome-email')
+const {shareLinkMessage} = require('../assets/campaigns/sharelink-message')
 
 const Mailjet = require('node-mailjet');
-var Brevo = require('@getbrevo/brevo');
+
+const Brevo = require('@getbrevo/brevo');
 
 
 const sendMailJet = asyncHandler( async(req, res) => {
@@ -44,29 +46,20 @@ const sendMailJet = asyncHandler( async(req, res) => {
 
 })
 
+const defaultClient = Brevo.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.SEND_IN_BLUE_API_KEY;
+var apiInstance = new Brevo.TransactionalEmailsApi();
+
+const sendSmtpEmail = new Brevo.SendSmtpEmail();
+sendSmtpEmail.sender = {email: 'hello@lucentafrica.com', name: 'Lucent Africa'};
+
+
 const sendInBlue = asyncHandler((user) => {
-
-    // console.log(req.body)
     
-    var defaultClient = Brevo.ApiClient.instance;
-    var apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = process.env.SEND_IN_BLUE_API_KEY;
-    var apiInstance = new Brevo.TransactionalEmailsApi();
-
-    var sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {email: 'hello@lucentafrica.com', name: 'Lucent Africa'};
     sendSmtpEmail.to = [{email: user.email}];
-    // sendSmtpEmail.params = {
-    //     greeting:"This is the default greeting",
-    //     headline:"This is the default headline"
-    // }
     sendSmtpEmail.subject = `Welcome ${user.name}`
     sendSmtpEmail.htmlContent = welcomeEmail(user)
-    // sendSmtpEmail.headers = {
-    //     "api-key": process.env.SEND_IN_BLUE_API_KEY,
-    //     "content-type": "application/json",
-    //     "accept": "application/json",
-    // }
 
     apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
         console.log('API called successfully. Returned data: ' + data);
@@ -76,7 +69,22 @@ const sendInBlue = asyncHandler((user) => {
 
 })
 
+const shareMeetingLink = asyncHandler((req, res) => {
+    sendSmtpEmail.to = [{email: req.body.receiverEmail}];
+    sendSmtpEmail.subject = `Schedule a meeting with ${req.body.tenantName}`
+    sendSmtpEmail.htmlContent = shareLinkMessage(req)
+
+    apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
+        console.log('API called successfully. Returned data: ' + data);
+        return res.status(200).json({message: data})
+    }, function(error) {
+        // console.error(`error >>> `, error);
+      return res.status(500).json({message: error.message})
+    });     
+})
+
 module.exports = { 
     sendMailJet,
-    sendInBlue
+    sendInBlue,
+    shareMeetingLink
 }
