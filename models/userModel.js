@@ -34,6 +34,10 @@ const userSchema = mongoose.Schema({
    profilePicture: {
     type: String,
     default: 'pending'
+   },
+   accountType: {
+    type: String,
+    default: 'personal'
    }
 }, 
 {

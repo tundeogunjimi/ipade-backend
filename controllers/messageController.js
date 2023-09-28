@@ -1,50 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const {welcomeEmail} = require('../assets/campaigns/welcome-email')
 const {shareLinkMessage} = require('../assets/campaigns/sharelink-message')
-
-const Mailjet = require('node-mailjet');
+const {meetingDetailsEmail} = require('../assets/campaigns/meeting-details')
 
 const Brevo = require('@getbrevo/brevo');
-
-
-const sendMailJet = asyncHandler( async(req, res) => {
-    
-    const mailjet = Mailjet.apiConnect(
-        process.env.MJ_APIKEY_PUBLIC,
-        process.env.MJ_APIKEY_PRIVATE,
-    );
-
-    const request = mailjet
-    .post('send', { version: 'v3.1' })
-    .request({
-        Messages: [
-        {
-            From: {
-            Email: "pilot@mailjet.com",
-            Name: "Mailjet Pilot"
-            },
-            To: [
-            {
-                Email: "passenger1@mailjet.com",
-                Name: "passenger 1"
-            }
-            ],
-            Subject: "Your email flight plan!",
-            TextPart: "Dear passenger 1, welcome to Mailjet! May the delivery force be with you!",
-            HTMLPart: "<h3>Dear passenger 1, welcome to <a href=\"https://www.mailjet.com/\">Mailjet</a>!</h3><br />May the delivery force be with you!"
-        }
-        ]
-    })
-
-    request
-    .then((result) => {
-        console.log(result.body)
-    })
-    .catch((err) => {
-        console.log(err.statusCode)
-    })
-
-})
 
 const defaultClient = Brevo.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
@@ -83,8 +42,20 @@ const shareMeetingLink = asyncHandler((req, res) => {
     });     
 })
 
+const sendMeetingDetails = asyncHandler((booking, meeting) => {
+    sendSmtpEmail.to = [{email: booking.email}];
+    sendSmtpEmail.subject = `Hello ${booking.name}, you have successfully scheduled an appointment`
+    sendSmtpEmail.htmlContent = meetingDetailsEmail(booking, meeting)
+
+    apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
+        console.log('API called successfully. Returned data: ' + data);
+    }, function(error) {
+        console.error(`error >>> `, error);
+    }); 
+})
+
 module.exports = { 
-    sendMailJet,
     sendInBlue,
-    shareMeetingLink
+    shareMeetingLink,
+    sendMeetingDetails,
 }

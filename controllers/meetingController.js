@@ -19,6 +19,8 @@ const createMeeting = asyncHandler(async(req, res) => {
             location: meeting.location,
             address: meeting.address,
             price: meeting.price,
+            resumptionTime: meeting.resumptionTime,
+            closingTime: meeting.closingTime,
             tenantId: meeting.tenantId,
             isFree: meeting.isFree
         }
@@ -42,9 +44,15 @@ const getAllMeetings = asyncHandler(async(req, res) => {
     res.status(200).json(meetings)
 })
 
-const getMeeting = asyncHandler(async(req, res) => {
+const getMeetingsByUsername = asyncHandler(async(req, res) => {
+    const username = req.params.username
+    const meetings = await Meeting.find({link: username})
+    console.log(username, meetings)
 
-    console.log(`view req >>> `, req.params)
+    res.status(200).json(meetings)
+})
+
+const getMeeting = asyncHandler(async(req, res) => {
 
     if(!req.params.id || !req.query.tenantId) {
         res.status(401)
@@ -101,12 +109,14 @@ validateFormInput = (meeting) => {
     if (!meeting.duration) formErrors.duration = 'Select a duration'
     if (!meeting.location) formErrors.location = 'Select a location'
     if (!meeting.dateRange.start || !meeting.dateRange.end) formErrors.dateRange = 'Select date range'
-    if (!meeting.price) formErrors.price = 'Price not valid'
+    if (!meeting.price) formErrors.price = 'Enter price or "0" for free meeting'
+    if (!meeting.resumptionTime) formErrors.resumptionTime = 'resumption time'
+    if (!meeting.closingTime) formErrors.closingTime = 'closing time'
     if (!meeting.tenantId) formErrors.tenantId = 'Tenant id not valid'
 
     if (formErrors.name || formErrors.duration || formErrors.location
         ||formErrors.dateRange || formErrors.link || formErrors.price 
-        || formErrors.tenantId) {
+        || formErrors.tenantId || formErrors.resumptionTime || formErrors.closingTime) {
         formErrors.status = 'invalid'
     }
     return formErrors
@@ -118,5 +128,6 @@ module.exports = {
     getAllMeetings,
     updateMeeting,
     deleteMeeting,
-    getMeeting
+    getMeeting,
+    getMeetingsByUsername
 }

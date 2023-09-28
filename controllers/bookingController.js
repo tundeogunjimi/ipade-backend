@@ -1,6 +1,9 @@
 const asyncHandler = require('express-async-handler')
 
 const Booking = require('../models/bookingModel')
+const Meeting = require('../models/meetingModel')
+
+const { sendMeetingDetails } = require('./messageController')
 
 const getAllBooking = asyncHandler(async(req, res) => {
 
@@ -14,7 +17,26 @@ const getAllBooking = asyncHandler(async(req, res) => {
         tenantId: req.query.tenantId
     })
 
-    res.status(200).json(bookings)
+    let fetchedBookings = []
+
+    bookings.forEach(booking => {
+        const bookingToAdd = {
+            id: booking._id,
+            name: booking.name,
+            email: booking.email,
+            date: booking.date, 
+            time: booking.time,
+            status: booking.status, 
+            location: booking.location, 
+            message: booking.message, 
+            tenantId: booking.tenantId, 
+            completed: booking.completed, 
+            meetingType: booking.meetingType,
+        }
+        fetchedBookings.push(bookingToAdd)
+    })
+
+    res.status(200).json(fetchedBookings)
 })
 
 
@@ -27,20 +49,29 @@ const getBooking = asyncHandler(async(req, res) => {
 
     const booking = await Booking.findById(req.params.id).exec()
 
-    res.status(200).json(booking)
+    const foundBooking = {
+        id: booking._id,
+        name: booking.name,
+        email: booking.email,
+        date: booking.date, 
+        time: booking.time,
+        status: booking.status, 
+        location: booking.location, 
+        message: booking.message, 
+        tenantId: booking.tenantId, 
+        completed: booking.completed, 
+        meetingType: booking.meetingType,
+    }
+
+    res.status(200).json(foundBooking)
 })
 
 
 const createBooking = asyncHandler(async(req, res) => {
     const { 
-        name, email, date, time,
+        name, email, date, time, location,
         status, message, tenantId, completed, meetingType,
     } = req.body
-
-    // if (!name || !email) {
-    //     res.status(400)
-    //     throw new Error('Please include all required fields')
-    // }
     
     const errors = validateBody(req.body)
     if (errors.status === 'invalid')  return res.status(400).json(errors)
@@ -48,12 +79,10 @@ const createBooking = asyncHandler(async(req, res) => {
     const booking = await Booking.create({
         name,
         email,
-        // gender, 
-        // mobile, 
         date, 
         time,
         status, 
-        // purpose, 
+        location, 
         message, 
         tenantId, 
         completed, 
@@ -62,20 +91,20 @@ const createBooking = asyncHandler(async(req, res) => {
 
     if (booking) {
         const createdBooking = {
-            _id: booking._id,
+            id: booking._id,
             name: booking.name,
             email: booking.email,
-            // gender: booking.gender, 
-            // mobile: booking.mobile, 
             date: booking.date, 
             time: booking.time,
             status: booking.status, 
-            // purpose: booking.purpose, 
+            location: booking.location, 
             message: booking.message, 
             tenantId: booking.tenantId, 
             completed: booking.completed, 
             meetingType: booking.meetingType,
         }
+        const meeting = await Meeting.findById(req.body.extras.queryParams.meetingId)
+        sendMeetingDetails(createdBooking, meeting, 'create')
         res.status(201).json(createdBooking)
     } else {
         res.status(400)
@@ -84,6 +113,7 @@ const createBooking = asyncHandler(async(req, res) => {
 })
 
 const updateBooking = asyncHandler(async(req, res) => {
+    // console.log(req.query, req.params, req.body.extras)
     
     if (!req.params.id || !req.query.tenantId) {
         res.status(401)
@@ -94,7 +124,9 @@ const updateBooking = asyncHandler(async(req, res) => {
     if (errors.status === 'invalid')  return res.status(400).json(errors)
 
     const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, req.body, {new: true}).exec()
-
+    const meeting = await Meeting.findById(req.body.extras.queryParams.meetingId)
+    // console.log(`meeting found >>> `, meeting, req.body.extras.queryParams.meetingId)
+    sendMeetingDetails(updatedBooking, meeting, 'update')
     res.status(200).json(updatedBooking)
 })
 

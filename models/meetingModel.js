@@ -29,6 +29,14 @@ const meetingSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    resumptionTime: {
+        type: String,
+        required: true
+    },
+    closingTime: {
+        type: String,
+        required: true
+    },
     tenantId: {
         type: String,
         required: true,

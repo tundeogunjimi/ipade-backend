@@ -12,9 +12,9 @@ const { sendInBlue } = require('./messageController')
  * @access Public
  */
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body
+    const { name, email, password, accountType } = req.body
 
-    if(!name || !email || !password) {
+    if(!name || !email || !password || !accountType) {
         res.status(400)
         throw new Error('Please include all fields')
     }
@@ -38,6 +38,7 @@ const registerUser = asyncHandler(async (req, res) => {
         email,
         password: hashedPassword,
         confirmationToken,
+        accountType,
         // custom_url: '' // todo: 
     })
 
@@ -47,6 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
             token: generateToken(user._id),
+            accountType: user.accountType,
             confirmationToken: user.confirmationToken
         }
         // send email with attached confirmation token to user
@@ -79,6 +81,7 @@ const loginUser = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
             bio: user.bio,
+            accountType: user.accountType,
             token: generateToken(user._id)
         })
     } else {
@@ -193,7 +196,8 @@ const getMe = asyncHandler(async (req, res) => {
         id: req.user._id,
         email: req.user.email, 
         name: req.user.name,
-        bio: req.user.bio
+        bio: req.user.bio,
+        accountType: req.user.accountType,
     }
     res.status(200).json(user)
 })
