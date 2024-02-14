@@ -39,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
         password: hashedPassword,
         confirmationToken,
         accountType,
-        // custom_url: '' // todo: 
+        // custom_url: '' // todo:
     })
 
     if (user) {
@@ -100,7 +100,7 @@ const confirmUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.query.id).select('-password')
 
     if(!user) {
-        return res.status(500).json({ status: false, message: 'user not found! Please contact support'}) 
+        return res.status(500).json({ status: false, message: 'user not found! Please contact support'})
     }
 
     if (req.query.token === user.confirmationToken) {
@@ -117,7 +117,7 @@ const confirmUser = asyncHandler(async (req, res) => {
 
     // user.isActive = true
     // const confirmedUser = await User.findByIdAndUpdate(user.id, user, {new: true})
-    
+
     // res.status(200).json(confirmedUser)
 })
 
@@ -148,7 +148,8 @@ const updateProfile = asyncHandler(async(req, res) => {
 
 const uploadProfilePicture = asyncHandler(async(req, res) => {
 
-    const { id, email, } = req.body.user
+    const { id, email, } = req.body
+    console.log(`req.body `, req.body)
 
     if(!email || !id) {
         res.status(400)
@@ -158,11 +159,11 @@ const uploadProfilePicture = asyncHandler(async(req, res) => {
     const user = await User.findOne({email, _id: id})
 
     if (user) {
-        const updateValues = {profilePicture: req.body.user.profilePicture}
+        const updateValues = {profilePicture: req.body.profilePicture}
         const updatedUser = await User.findByIdAndUpdate(user.id, updateValues)
+        console.log(`updated user >>> `, updatedUser)
         return res.status(200).json({message: true})
     }
-    console.log(req.body)
 })
 
 const deleteProfile = asyncHandler(async(req, res) => {
@@ -194,10 +195,11 @@ const deleteProfile = asyncHandler(async(req, res) => {
 const getMe = asyncHandler(async (req, res) => {
     const user = {
         id: req.user._id,
-        email: req.user.email, 
+        email: req.user.email,
         name: req.user.name,
         bio: req.user.bio,
         accountType: req.user.accountType,
+        profilePicture: req.user.profilePicture,
     }
     res.status(200).json(user)
 })
